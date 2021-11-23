@@ -1,0 +1,23 @@
+{
+  "name": "three-geojson",
+  "version": "0.0.1",
+  "description": "Build ThreeJS Mesh with GeoJSON",
+  "source": "src/index.js",
+  "main": "dist/main.js",
+  "scripts": {
+    "watch": "parcel watch",
+    "build": "parcel build"
+  },
+  "keywords": [
+    "threejs",
+    "geojson"
+  ],
+  "author": "p10y",
+  "license": "ISC",
+  "dependencies": {
+    "three": "^0.134.0"
+  },
+  "devDependencies": {
+    "parcel": "^2.0.1"
+  }
+}
