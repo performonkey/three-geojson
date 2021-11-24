@@ -85,33 +85,7 @@ export function geoPlaneGeometry(triJson, radius = 1, thickness = 0, dimension =
 	return g;
 }
 
-export function buildPlane(
-	triJson,
-	radius = 1,
-	thickness = 0,
-	material = new MeshBasicMaterial({
-		color: 0x080808,
-		transparent: true,
-		opacity: 0.2
-	}),
-	dimension = 3,
-) {
-	const obj = new Object3D();
-
-	Object.entries(triJson).forEach(([name, tri]) => {
-		const plane = new Mesh(
-			geoPlaneGeometry(tri, radius, thickness, dimension),
-			material
-		);
-		plane.userData.type = 'plane';
-		obj.name = name;
-		obj.add(plane);
-	});
-
-	return obj;
-}
-
-export function geoContourGeomtry(triJson, radius, thickness, dimension) {
+export function geoContourGeomtry(triJson, radius = 1, thickness = 0, dimension = 3) {
 	const { polygons, vertices } = prepare(triJson, radius, thickness, dimension);
 	const segments = polygons.reduce((obj, lines) => {
 		lines.forEach((pts) => {
@@ -141,32 +115,4 @@ export function geoContourGeomtry(triJson, radius, thickness, dimension) {
 	geometry.setIndex(new BufferAttribute(new Uint16Array(segments.indices), 1));
 
 	return geometry;
-}
-
-export function buildContour(
-	triJson,
-	radius = 1,
-	thickness = 0,
-	material = new LineBasicMaterial({
-		color: 0x999999,
-		depthTest: true,
-		opacity: 1,
-		transparent: true,
-		linewidth: 0.3,
-	}),
-	dimension = 3
-) {
-	const obj = new THREE.Object3D();
-
-	Object.entries(triJson).forEach(([name, tri]) => {
-		const contour = new THREE.LineSegments(
-			geoContourGeomtry(tri, radius, thickness, dimension),
-			material
-		);
-		contour.name = name
-		contour.userData.type = 'border';
-		obj.add(contour);
-	});
-
-	return obj;
 }
