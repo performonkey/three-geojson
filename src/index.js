@@ -1,46 +1,66 @@
-import { Vector3, BufferAttribute, BufferGeometry, MeshBasicMaterial, LineBasicMaterial, Object3D, Mesh } from 'three';
+import { 
+	Vector3, 
+	BufferAttribute, 
+	BufferGeometry, 
+	MeshBasicMaterial, 
+	LineBasicMaterial, 
+	Object3D, 
+	Mesh,
+} from 'three';
 
-export function latLonToVector3(lat, lon, radius = 1){
-	const phi = (lat) * Math.PI / 180;
-	const theta = (360 - lon) * Math.PI / 180;
-	return new Vector3(
-	  radius * Math.cos(phi) * Math.cos(theta),
-	  radius * Math.sin(phi),
-	  radius * Math.cos(phi) * Math.sin(theta),
-	);
+export function latLonToVector3(lat, lon, radius = 1, dimension = 3){
+	if (dimension === 3) {
+		const phi = (lat) * Math.PI / 180;
+		const theta = (360 - lon) * Math.PI / 180;
+		return new Vector3(
+			radius * Math.cos(phi) * Math.cos(theta),
+			radius * Math.sin(phi),
+			radius * Math.cos(phi) * Math.sin(theta),
+		);
+	} else {
+		return new Vector3(
+			radius * lon / 360,
+			radius * lat / 180,
+			0,
+		);
+	}
 }
 
-function prepare({ vertices: v, triangles: t, polygons }, radius, thickness) {
-	const triangles = [...t] ;
+export function prepare({ vertices: v, triangles: t, polygons }, radius, thickness, dimension) {
+	let triangles = [...t] ;
 	const vertices = [];
 	for (let i = 0; i < v.length; i += 2) {
 		const lon = v[i];
 		const lat = v[i + 1];
-		const vec3 = latLonToVector3(lat, lon, radius);
+		const vec3 = latLonToVector3(lat, lon, radius, dimension);
 		vertices.push(vec3);
 	}
 
 	if (thickness > 0) {
+		const vecLen = vertices.length;
 		vertices.forEach(v => {
-			vertices.push(
-				v.clone().multiplyScalar(1 + thickness)
-			);
+			topVec = v.clone();
+			if (dimension === 3) {
+				topVec = topVec.multiplyScalar(1 + thickness);
+			} else {
+				topVec.z += thickness;
+			}
+			vertices.push(topVec);
 		});
-		const vecLenHalf = vertices.length / 2;
-		triangles.forEach(x => {
-			triangles.push(x + vecLenHalf);
-		});
+		// use top override bottom
+		triangles = triangles.map(x => x + vecLen);
 		polygons.forEach((polyWithHoles) => {
-			polyWithHoles.forEach((p, i) => {
-				p.forEach((idx) => {
+			polyWithHoles.forEach((p, pIdx) => {
+				for (let idx = 0; idx <= p.length - 2; idx++) {
 					const a = p[idx];
 					const b = p[(idx + 1) % p.length];
-					if (i === 0) {
-						triangles.push(a, b, a + vecLenHalf);
-					} else {
-						triangles.push(b, a, a + vecLenHalf);
+					if (pIdx === 0) { // polygon
+						triangles.push(a, b, a + vecLen);
+						triangles.push(b + vecLen, a + vecLen, b);
+					} else { // hole
+						triangles.push(b, a, a + vecLen);
 					}
-				});
+				}
 			});
 		});
 	}
@@ -48,8 +68,8 @@ function prepare({ vertices: v, triangles: t, polygons }, radius, thickness) {
 	return { vertices, triangles, polygons };
 }
 
-export function geoPlaneGeometry(triJson, radius = 1, thickness = 0) {
-	const { triangles, vertices } = prepare(triJson, radius, thickness);
+export function geoPlaneGeometry(triJson, radius = 1, thickness = 0, dimension = 3) {
+	const { triangles, vertices } = prepare(triJson, radius, thickness, dimension);
 	const g = new BufferGeometry();
 	g.setAttribute(
 		'position',
@@ -73,13 +93,14 @@ export function buildPlane(
 		color: 0x080808,
 		transparent: true,
 		opacity: 0.2
-	})
+	}),
+	dimension = 3,
 ) {
 	const obj = new Object3D();
 
 	Object.entries(triJson).forEach(([name, tri]) => {
 		const plane = new Mesh(
-			geoPlaneGeometry(tri, radius, thickness),
+			geoPlaneGeometry(tri, radius, thickness, dimension),
 			material
 		);
 		plane.userData.type = 'plane';
@@ -90,8 +111,8 @@ export function buildPlane(
 	return obj;
 }
 
-export function geoContourGeomtry(triJson, radius, thickness) {
-	const { polygons, vertices } = prepare(triJson, radius, thickness);
+export function geoContourGeomtry(triJson, radius, thickness, dimension) {
+	const { polygons, vertices } = prepare(triJson, radius, thickness, dimension);
 	const segments = polygons.reduce((obj, lines) => {
 		lines.forEach((pts) => {
 			const shift = thickness > 0 ? (vertices.length / 2) : 0;
@@ -132,13 +153,14 @@ export function buildContour(
 		opacity: 1,
 		transparent: true,
 		linewidth: 0.3,
-	})
+	}),
+	dimension = 3
 ) {
 	const obj = new THREE.Object3D();
 
 	Object.entries(triJson).forEach(([name, tri]) => {
 		const contour = new THREE.LineSegments(
-			geoContourGeomtry(tri, radius, thickness),
+			geoContourGeomtry(tri, radius, thickness, dimension),
 			material
 		);
 		contour.name = name
