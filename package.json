@@ -5,6 +5,7 @@
   "source": "src/index.js",
   "main": "dist/main.js",
   "scripts": {
+    "example": "parcel example/index.html",
     "watch": "parcel watch",
     "build": "parcel build"
   },
