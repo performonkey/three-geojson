@@ -1,6 +1,6 @@
 {
   "name": "three-geojson",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Build ThreeJS Mesh with GeoJSON",
   "source": "src/index.js",
   "main": "dist/main.js",
