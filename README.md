@@ -10,7 +10,7 @@ use http://makc.github.io/three.js/map2globe/ tranform GeoJSON to triangle json
 
 # Example
 
-```
+```js
 import { geoPlaneGeometry, geoContourGeomtry } from 'three-geojson';
 
 

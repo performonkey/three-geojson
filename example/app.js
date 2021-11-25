@@ -55,12 +55,12 @@ let base;
 let geoLayer;
 
 function buildSphere() {
-	thickness = 0.01;
+	thickness = 0.05;
 	
 	const base = new THREE.Mesh(
 		new THREE.SphereGeometry(radius - 2, 50, 50),
 		new THREE.MeshBasicMaterial({ 
-			color: 0x111111,
+			color: 0xd8d8d8,
 		})
 	);
 

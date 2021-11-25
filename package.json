@@ -15,6 +15,10 @@
   ],
   "author": "p10y",
   "license": "ISC",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "dependencies": {
     "three": "^0.134.0"
   },
