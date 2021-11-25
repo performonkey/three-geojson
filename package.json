@@ -4,10 +4,11 @@
   "description": "Build ThreeJS Mesh with GeoJSON",
   "source": "src/index.js",
   "main": "dist/main.js",
+  "module": "dist/module.js",
   "scripts": {
     "example": "parcel example/index.html",
     "watch": "parcel watch",
-    "build": "parcel build"
+    "build": "rm -rf ./dist/* && parcel build"
   },
   "keywords": [
     "threejs",
