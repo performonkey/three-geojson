@@ -2,10 +2,6 @@ import {
 	Vector3, 
 	BufferAttribute, 
 	BufferGeometry, 
-	MeshBasicMaterial, 
-	LineBasicMaterial, 
-	Object3D, 
-	Mesh,
 } from 'three';
 
 export function latLonToVector3(lat, lon, radius = 1, dimension = 3){
@@ -87,9 +83,10 @@ export function geoPlaneGeometry(triJson, radius = 1, thickness = 0, dimension =
 
 export function geoContourGeomtry(triJson, radius = 1, thickness = 0, dimension = 3) {
 	const { polygons, vertices } = prepare(triJson, radius, thickness, dimension);
+	const vertLenHalf = vertices.length / 2;
 	const segments = polygons.reduce((obj, lines) => {
 		lines.forEach((pts) => {
-			const shift = thickness > 0 ? (vertices.length / 2) : 0;
+			const shift = thickness > 0 ? vertLenHalf : 0;
 			pts.forEach((idx, i) => {
 				obj.vertices.push(vertices[idx + shift]);
 				if (i > 0) {
