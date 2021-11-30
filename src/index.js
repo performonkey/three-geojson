@@ -15,7 +15,7 @@ export function latLonToVector3(lat, lon, radius = 1, dimension = 3){
 		);
 	} else {
 		return new Vector3(
-			radius * lon / 360,
+			radius * lon / 180,
 			radius * lat / 180,
 			0,
 		);

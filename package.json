@@ -5,6 +5,10 @@
   "source": "src/index.js",
   "main": "dist/main.js",
   "module": "dist/module.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com:performonkey/three-geojson.git"
+  },
   "scripts": {
     "example": "parcel example/index.html",
     "watch": "parcel watch",

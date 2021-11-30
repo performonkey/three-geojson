@@ -4,7 +4,7 @@
 npm install three-geojson
 ```
 
-# Perpare Data
+# Prepare Data
 
 use http://makc.github.io/three.js/map2globe/ tranform GeoJSON to triangle json
 
