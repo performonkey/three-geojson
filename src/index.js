@@ -31,7 +31,6 @@ export function prepare({ vertices: v, triangles: t, polygons }, radius, thickne
 		const vec3 = latLonToVector3(lat, lon, radius, dimension);
 		vertices.push(vec3);
 	}
-	debugger;
 	if (thickness > 0) {
 		const vecLen = vertices.length;
 		vertices.forEach(v => {
@@ -69,10 +68,10 @@ export function prepare({ vertices: v, triangles: t, polygons }, radius, thickne
 }
 
 export function geoPlaneGeometry(
-	triJson, 
-	radius = 1, 
-	thickness = 0, 
-	dimension = 3, 
+	triJson,
+	radius = 1,
+	thickness = 0,
+	dimension = 3,
 	genFaceSide = { top: true, side: true, bottom: false },
 ) {
 	const { triangles, vertices } = prepare(triJson, radius, thickness, dimension, genFaceSide);
@@ -93,10 +92,10 @@ export function geoPlaneGeometry(
 }
 
 export function geoContourGeomtry(
-	triJson, 
-	radius = 1, 
-	thickness = 0, 
-	dimension = 3, 
+	triJson,
+	radius = 1,
+	thickness = 0,
+	dimension = 3,
 	genFaceSide = { top: true },
 ) {
 	const { polygons, vertices } = prepare(triJson, radius, thickness, dimension, genFaceSide);
