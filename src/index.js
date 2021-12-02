@@ -1,10 +1,10 @@
-import { 
-	Vector3, 
-	BufferAttribute, 
-	BufferGeometry, 
+import {
+	Vector3,
+	BufferAttribute,
+	BufferGeometry,
 } from 'three';
 
-export function latLonToVector3(lat, lon, radius = 1, dimension = 3){
+export function latLonToVector3(lat, lon, radius = 1, dimension = 3) {
 	if (dimension === 3) {
 		const phi = (lat) * Math.PI / 180;
 		const theta = (360 - lon) * Math.PI / 180;
@@ -22,8 +22,8 @@ export function latLonToVector3(lat, lon, radius = 1, dimension = 3){
 	}
 }
 
-export function prepare({ vertices: v, triangles: t, polygons }, radius, thickness, dimension) {
-	let triangles = [...t] ;
+export function prepare({ vertices: v, triangles: t, polygons }, radius, thickness, dimension, genFaceSide) {
+	let triangles = [...t];
 	const vertices = [];
 	for (let i = 0; i < v.length; i += 2) {
 		const lon = v[i];
@@ -31,11 +31,11 @@ export function prepare({ vertices: v, triangles: t, polygons }, radius, thickne
 		const vec3 = latLonToVector3(lat, lon, radius, dimension);
 		vertices.push(vec3);
 	}
-
+	debugger;
 	if (thickness > 0) {
 		const vecLen = vertices.length;
 		vertices.forEach(v => {
-			topVec = v.clone();
+			let topVec = v.clone();
 			if (dimension === 3) {
 				topVec = topVec.multiplyScalar(1 + thickness);
 			} else {
@@ -43,29 +43,39 @@ export function prepare({ vertices: v, triangles: t, polygons }, radius, thickne
 			}
 			vertices.push(topVec);
 		});
-		// use top override bottom
-		triangles = triangles.map(x => x + vecLen);
-		polygons.forEach((polyWithHoles) => {
-			polyWithHoles.forEach((p, pIdx) => {
-				for (let idx = 0; idx <= p.length - 2; idx++) {
-					const a = p[idx];
-					const b = p[(idx + 1) % p.length];
-					if (pIdx === 0) { // polygon
-						triangles.push(a, b, a + vecLen);
-						triangles.push(b + vecLen, a + vecLen, b);
-					} else { // hole
-						triangles.push(b, a, a + vecLen);
+
+		const top = triangles.map(x => x + vecLen);
+		if (!genFaceSide.bottom) triangles = [];
+		if (genFaceSide.top) triangles.push(...top);
+		if (genFaceSide.side) {
+			polygons.forEach((polyWithHoles) => {
+				polyWithHoles.forEach((p, pIdx) => {
+					for (let idx = 0; idx <= p.length - 2; idx++) {
+						const a = p[idx];
+						const b = p[(idx + 1) % p.length];
+						if (pIdx === 0) { // polygon
+							triangles.push(a, b, a + vecLen);
+							triangles.push(b + vecLen, a + vecLen, b);
+						} else { // hole
+							triangles.push(b, a, a + vecLen);
+						}
 					}
-				}
+				});
 			});
-		});
+		}
 	}
 
 	return { vertices, triangles, polygons };
 }
 
-export function geoPlaneGeometry(triJson, radius = 1, thickness = 0, dimension = 3) {
-	const { triangles, vertices } = prepare(triJson, radius, thickness, dimension);
+export function geoPlaneGeometry(
+	triJson, 
+	radius = 1, 
+	thickness = 0, 
+	dimension = 3, 
+	genFaceSide = { top: true, side: true, bottom: false },
+) {
+	const { triangles, vertices } = prepare(triJson, radius, thickness, dimension, genFaceSide);
 	const g = new BufferGeometry();
 	g.setAttribute(
 		'position',
@@ -78,11 +88,18 @@ export function geoPlaneGeometry(triJson, radius = 1, thickness = 0, dimension =
 		)
 	);
 	g.setIndex(triangles);
+	g.computeVertexNormals();
 	return g;
 }
 
-export function geoContourGeomtry(triJson, radius = 1, thickness = 0, dimension = 3) {
-	const { polygons, vertices } = prepare(triJson, radius, thickness, dimension);
+export function geoContourGeomtry(
+	triJson, 
+	radius = 1, 
+	thickness = 0, 
+	dimension = 3, 
+	genFaceSide = { top: true },
+) {
+	const { polygons, vertices } = prepare(triJson, radius, thickness, dimension, genFaceSide);
 	const vertLenHalf = vertices.length / 2;
 	const segments = polygons.reduce((obj, lines) => {
 		lines.forEach((pts) => {

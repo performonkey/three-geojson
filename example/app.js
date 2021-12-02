@@ -14,7 +14,7 @@ const width = el.clientWidth;
 const height = el.clientHeight;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setClearColor(0xffffff);
+renderer.setClearColor(0xddaaaa);
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(width, height);
 el.innerHTML = '';
@@ -46,9 +46,9 @@ camera.position.z = 500;
 const scene = new THREE.Scene();
 controls = new OrbitControls(camera, el);
 
-scene.add(new THREE.HemisphereLight(0x404040, 0x080808, 1));
-const dl1 = new THREE.DirectionalLight(0xffffff, 1);
-dl1.position.set(500, 500, 0);
+scene.add(new THREE.HemisphereLight());
+const dl1 = new THREE.DirectionalLight(0x808080, 1);
+dl1.position.set(-500, 500, 500);
 scene.add(dl1);
 
 let base;
@@ -59,39 +59,47 @@ function buildSphere() {
 	
 	const base = new THREE.Mesh(
 		new THREE.SphereGeometry(radius - 2, 50, 50),
-		new THREE.MeshBasicMaterial({ 
-			color: 0xd8d8d8,
+		new THREE.MeshLambertMaterial({ 
+			color: 0xddaaaa,
 		})
 	);
 
 	const geoLayer = new THREE.Object3D();
 	Object.entries(worldTriJson).forEach(([name, tri]) => {
+		const obj = new THREE.Object3D();
+		obj.name = name;
+
+		const geometry = geoPlaneGeometry(tri, radius, thickness, 3, { top: true, bottom: false, side: false });
 		const plane = new THREE.Mesh(
-			geoPlaneGeometry(tri, radius, thickness),
-			new THREE.MeshLambertMaterial({
-				color: 0xff8080,
-				transparent: true,
-				opacity: 0.7,
+			geometry,
+			new THREE.MeshBasicMaterial({
+				color: 0x88a080,
 				side: THREE.DoubleSide,
 			})
 		);
 		plane.userData.type = 'plane';
+		obj.add(plane);
+		const planeSide = new THREE.Mesh(
+			geoPlaneGeometry(tri, radius, thickness, 3, { top: false, bottom: false, side: true }),
+			new THREE.MeshLambertMaterial({
+				color: 0x88a080,
+				side: THREE.DoubleSide,
+			})
+		);
+		planeSide.userData.type = 'planeSide';
+		obj.add(planeSide);
 
 		const contour = new THREE.LineSegments(
 			geoContourGeomtry(tri, radius, thickness),
 			new THREE.LineBasicMaterial({
-				color: 0xff8080,
+				color: 0xffdd80,
 				depthTest: true,
 				opacity: 1,
 				transparent: false,
-				linewidth: 1,
+				linewidth: 2,
 			})
 		);
 		contour.userData.type = 'border';
-
-		const obj = new THREE.Object3D();
-		obj.name = name;
-		obj.add(plane);
 		obj.add(contour);
 
 		geoLayer.add(obj);
@@ -105,26 +113,39 @@ function buildPlane() {
 	const base = new THREE.Mesh(
 		new THREE.PlaneGeometry(360, 180),
 		new THREE.MeshBasicMaterial({ 
-			color: 0xf0f0f9,
+			color: 0xdadada,
 		})
 	);
+
 	const geoLayer = new THREE.Object3D();
 	Object.entries(worldTriJson).forEach(([name, tri]) => {
+		const obj = new THREE.Object3D();
+		obj.name = name;
+
+		const geometry = geoPlaneGeometry(tri, radius, thickness, 2, { top: true, bottom: false, side: false });
 		const plane = new THREE.Mesh(
-			geoPlaneGeometry(tri, radius, thickness, 2),
-			new THREE.MeshStandardMaterial({
-				color: 0x808080,
-				transparent: true,
-				opacity: 0.9,
+			geometry,
+			new THREE.MeshBasicMaterial({
+				color: 0x88a080,
 				side: THREE.DoubleSide,
 			})
 		);
 		plane.userData.type = 'plane';
+		obj.add(plane);
+		const planeSide = new THREE.Mesh(
+			geoPlaneGeometry(tri, radius, thickness, 2, { top: false, bottom: false, side: true }),
+			new THREE.MeshPhongMaterial({
+				color: 0x88a080,
+				side: THREE.DoubleSide,
+			})
+		);
+		planeSide.userData.type = 'planeSide';
+		obj.add(planeSide);
 
 		const contour = new THREE.LineSegments(
 			geoContourGeomtry(tri, radius, thickness, 2),
 			new THREE.LineBasicMaterial({
-				color: 0xff8080,
+				color: 0xffdd80,
 				depthTest: true,
 				opacity: 1,
 				transparent: true,
@@ -132,10 +153,6 @@ function buildPlane() {
 			})
 		);
 		contour.userData.type = 'border';
-
-		const obj = new THREE.Object3D();
-		obj.name = name;
-		obj.add(plane);
 		obj.add(contour);
 
 		geoLayer.add(obj);
